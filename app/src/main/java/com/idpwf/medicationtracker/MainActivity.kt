@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.captionBarPadding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -19,8 +20,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -81,26 +85,37 @@ fun MedicationTrackerTopBar(modifier: Modifier) {
 fun TakenMedTodayCounter(modifier: Modifier, count: Int) {
     Text(
         text = count.toString(),
-        modifier,
-//            style = TextStyle(fontSize = TextUnit(32f, type = TextUnitType.Sp))
+        modifier = modifier,
+        fontSize = 30.sp,
+        textAlign = TextAlign.Center
     )
 }
 
 @Composable
 fun TakenMedRow(modifier: Modifier, medicationName: String, takenToday: Int) {
-    Row {
+    Row(modifier.fillMaxWidth()) {
         var takenToday by rememberSaveable { mutableIntStateOf(takenToday) }
 
-        Button(onClick = {
-            takenToday++
-            println("clicked on $medicationName ; new value of counter is $takenToday")
-        }) {
+        Button(
+            onClick = {
+                takenToday++
+                println("clicked on $medicationName ; new value of counter is $takenToday")
+            },
+            modifier = borderStroke(Modifier.weight(4f), Color.Red)
+        ) {
             Text(text = medicationName)
         }
 
-        TakenMedTodayCounter(modifier, takenToday)
+        TakenMedTodayCounter(
+            modifier = borderStroke(Modifier.weight(1f), Color.Blue)
+                .align(Alignment.CenterVertically),
+            count = takenToday
+        )
 
-        Button({ }, modifier) {
+        Button(
+            { },
+            modifier = borderStroke(Modifier.weight(1f), Color.Green)
+        ) {
             Text("❌")
         }
     }
@@ -117,10 +132,22 @@ fun AppHeaderRow(modifier: Modifier) {
 
 @Composable
 fun TakenMedLabelRow(modifier: Modifier) {
-    Row(modifier) {
-        Text("Medication Name and Dose")
-        Text("Taken Today")
-        Text("Delete Medication")
+    Row(modifier.fillMaxWidth()) {
+        Text(
+            text = "Medication Name and Dose",
+            modifier = borderStroke(Modifier.weight(4f), Color.Red),
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "Today",
+            modifier = borderStroke(Modifier.weight(1f), Color.Blue),
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "Delete",
+            modifier = borderStroke(Modifier.weight(1f), Color.Green),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -129,9 +156,9 @@ fun TakenMedLabelRow(modifier: Modifier) {
 fun MedicationTrackerMedsList(meds: List<TakenMed>, modifier: Modifier) {
     println("Composing MedicationTrackerMedsList")
     Column(modifier) {
-        TakenMedLabelRow(modifier)
+        TakenMedLabelRow(Modifier)
         meds.forEach { takenMed ->
-            TakenMedRow(modifier, medicationName = takenMed.name, takenMed.amount)
+            TakenMedRow(Modifier, medicationName = takenMed.name, takenMed.amount)
         }
     }
 }
@@ -158,4 +185,3 @@ fun MedicationTrackerMedsList(meds: List<TakenMed>, modifier: Modifier) {
 //}
 
 class TakenMed(val name: String, val amount: Int)
-
