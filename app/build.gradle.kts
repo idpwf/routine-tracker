@@ -50,6 +50,14 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // Room persistence
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.roomktx)
+
+    implementation(libs.kotlinx.serialization.json)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
