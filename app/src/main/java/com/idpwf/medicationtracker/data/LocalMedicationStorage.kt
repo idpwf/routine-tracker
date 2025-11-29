@@ -1,12 +1,21 @@
 package com.idpwf.medicationtracker.data
-import kotlinx.serialization.encodeToString
 
 import android.content.Context
 import kotlinx.serialization.json.Json
 
-class LocalMedicationStorage(context: Context) {
+class LocalMedicationStorage {
 
-    private val medicationDao = MedicationDatabase.getDatabase(context).medicationDao()
+    private val medicationDao: MedicationDao
+
+    constructor(context: Context) {
+        this.medicationDao = MedicationDatabase.getDatabase(context).medicationDao()
+    }
+
+    // This internal constructor is used for testing purposes,
+    // allowing a mock or in-memory DAO to be injected.
+    internal constructor(medicationDao: MedicationDao) {
+        this.medicationDao = medicationDao
+    }
 
     suspend fun getAllMedications(): String {
         val medications = medicationDao.getAll()
@@ -18,7 +27,6 @@ class LocalMedicationStorage(context: Context) {
     }
 
     suspend fun deleteMedication(medicationRecord: MedicationRecord): Boolean {
-        val deletedRows = medicationDao.delete(medicationRecord)
-        return deletedRows > 0
+        return medicationDao.delete(medicationRecord) > 0
     }
 }
