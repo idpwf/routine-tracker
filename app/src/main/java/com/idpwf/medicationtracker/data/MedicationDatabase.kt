@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
-@Database(entities = [MedicationRecord::class], version = 1)
+@Database(entities = [MedicationRecord::class, MedicationsTakenRecord::class], version = 2)
+@TypeConverters(Converters::class)
 abstract class MedicationDatabase : RoomDatabase() {
     abstract fun medicationDao(): MedicationDao
 
@@ -19,7 +21,9 @@ abstract class MedicationDatabase : RoomDatabase() {
                     context.applicationContext,
                     MedicationDatabase::class.java,
                     "medication_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration(true)
+                .build()
                 INSTANCE = instance
                 instance
             }

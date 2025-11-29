@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface MedicationDao {
@@ -16,4 +17,16 @@ interface MedicationDao {
 
     @Delete
     suspend fun delete(medicationRecord: MedicationRecord): Int
+
+    @Query("SELECT * FROM medications_taken LIMIT 1")
+    suspend fun getTodaysRecord(): MedicationsTakenRecord?
+
+    @Insert
+    suspend fun insert(medicationsTakenRecord: MedicationsTakenRecord)
+
+    @Update
+    suspend fun update(medicationsTakenRecord: MedicationsTakenRecord)
+
+    @Query("DELETE FROM medications_taken")
+    suspend fun clearMedicationsTaken()
 }
