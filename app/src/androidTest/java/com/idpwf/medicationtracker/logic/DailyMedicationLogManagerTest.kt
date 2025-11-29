@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.idpwf.medicationtracker.data.MedicationDatabase
 import com.idpwf.medicationtracker.data.MedicationDao
+import com.idpwf.medicationtracker.data.MedicationDatabase
 import com.idpwf.medicationtracker.data.MedicationsTakenRecord
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
@@ -33,11 +33,10 @@ class DailyMedicationLogManagerTest {
         
         // Step 1: Add allowMainThreadQueries() to the database builder.
         // This is a requirement for Room testing to prevent a crash during initialization.
-        val db1 = Room.inMemoryDatabaseBuilder(
-            context, MedicationDatabase::class.java
-        )
-        val db2 = db1.allowMainThreadQueries()
-        db = db2.build()
+        db = Room.inMemoryDatabaseBuilder(
+            context,
+            MedicationDatabase::class.java
+        ).allowMainThreadQueries().build()
         medicationDao = db.medicationDao()
 
         // Step 2: Use the test-only constructor to inject the in-memory DAO.

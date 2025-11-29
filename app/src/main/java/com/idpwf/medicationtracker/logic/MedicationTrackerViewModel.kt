@@ -1,8 +1,6 @@
 package com.idpwf.medicationtracker.logic
 
 import androidx.lifecycle.ViewModel
-import java.time.LocalDate
-import java.util.concurrent.ConcurrentHashMap
 
 class MedicationTrackerViewModel : ViewModel() {
     //TODO Does this work correctly if I start the `Activity` EXACTLY at midnight?
