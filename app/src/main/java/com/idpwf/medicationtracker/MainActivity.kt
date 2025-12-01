@@ -29,16 +29,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.idpwf.medicationtracker.logic.MedicationTrackerViewModel
 import com.idpwf.medicationtracker.ui.theme.MedicationTrackerTheme
 
+// This data class represents the fully combined data needed for display in the UI.
+class Medication(val name: String, val dosage: String, val takenToday: Int)
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             MedicationTrackerTheme {
-                // The ViewModel is created using the viewModel() composable,
-                // which automatically handles its lifecycle.
                 val viewModel: MedicationTrackerViewModel = viewModel()
-                val takenToday by viewModel.takenToday.collectAsState()
+                // The UI observes the list of medications. When this list changes in the
+                // ViewModel, this composable will automatically re-render.
+                val medications by viewModel.medications.collectAsState()
 
                 var showAddMedicationDialog by remember { mutableStateOf(false) }
 
@@ -54,7 +57,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         MedicationTrackerTopBar()
                         MedicationTrackerMedsList(
-                            meds = takenToday.map { TakenMed(it.key, it.value) },
+                            meds = medications,
                             onMedicationTaken = { medicationName -> viewModel.takeMed(medicationName) }
                         )
                     }
@@ -130,21 +133,20 @@ fun TakenMedTodayCounter(modifier: Modifier = Modifier, count: Int) {
 @Composable
 fun TakenMedRow(
     modifier: Modifier = Modifier, 
-    medicationName: String, 
-    takenToday: Int, 
+    medication: Medication, 
     onMedicationTaken: (String) -> Unit
 ) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Button(
-            onClick = { onMedicationTaken(medicationName) },
+            onClick = { onMedicationTaken(medication.name) },
             modifier = Modifier.weight(4f)
         ) {
-            Text(text = medicationName)
+            Text(text = "${medication.name} ${medication.dosage}")
         }
 
         TakenMedTodayCounter(
             modifier = Modifier.weight(1f),
-            count = takenToday
+            count = medication.takenToday
         )
 
         Button(
@@ -188,21 +190,18 @@ fun TakenMedLabelRow(modifier: Modifier = Modifier) {
 
 @Composable
 fun MedicationTrackerMedsList(
-    meds: List<TakenMed>,
+    meds: List<Medication>,
     modifier: Modifier = Modifier,
     onMedicationTaken: (String) -> Unit
 ) {
     Column(modifier) {
         TakenMedLabelRow(modifier = Modifier.fillMaxWidth())
-        meds.forEach { takenMed ->
+        meds.forEach { medication ->
             TakenMedRow(
                 modifier = Modifier.fillMaxWidth(),
-                medicationName = takenMed.name,
-                takenToday = takenMed.amount,
+                medication = medication,
                 onMedicationTaken = onMedicationTaken
             )
         }
     }
 }
-
-class TakenMed(val name: String, val amount: Int)

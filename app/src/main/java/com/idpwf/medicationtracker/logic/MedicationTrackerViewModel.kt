@@ -4,33 +4,54 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.idpwf.medicationtracker.Medication
 import com.idpwf.medicationtracker.data.LocalMedicationStorage
 import com.idpwf.medicationtracker.data.MedicationRecord
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 class MedicationTrackerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val localMedicationStorage = LocalMedicationStorage(application)
     private val dailyMedicationLogManager = DailyMedicationLogManager(application)
 
-    // Using a StateFlow to hold the list of medications taken today.
-    // This is the modern, recommended way to expose data from a ViewModel in Android.
-    private val _takenToday = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val takenToday: StateFlow<Map<String, Int>> = _takenToday.asStateFlow()
+    // This is the single source of truth for the UI. It holds the combined
+    // and processed list of medications to be displayed.
+    private val _medications = MutableStateFlow<List<Medication>>(emptyList())
+    val medications: StateFlow<List<Medication>> = _medications.asStateFlow()
 
     init {
         // Load the initial state when the ViewModel is created.
-        refreshTakenToday()
+        refreshMedications()
     }
 
-    private fun refreshTakenToday() {
+    private fun refreshMedications() {
         viewModelScope.launch {
-            Log.i("MedicationTrackerViewModel", "Refreshing medication state.")
-            _takenToday.value = dailyMedicationLogManager.getCurrentState().medicationsTaken
-            Log.i("MedicationTrackerViewModel", "Medication state refreshed successfully.")
+            Log.i("MedicationTrackerViewModel", "Starting to refresh medication state.")
+
+            // Using async to fetch both data sources concurrently for better performance.
+            val allMedsDeferred = async { Json.decodeFromString<List<MedicationRecord>>(localMedicationStorage.getAllMedications()) }
+            val takenTodayDeferred = async { dailyMedicationLogManager.getCurrentState() }
+
+            val allMeds = allMedsDeferred.await()
+            val takenTodayRecord = takenTodayDeferred.await()
+
+            // This is the combination logic, as specified in the MT-004 prompt.
+            val combinedList = allMeds.map { medicationRecord ->
+                val takenCount = takenTodayRecord.medicationsTaken[medicationRecord.medicationName] ?: 0
+                Medication(
+                    name = medicationRecord.medicationName,
+                    dosage = medicationRecord.dosage,
+                    takenToday = takenCount
+                )
+            }
+
+            _medications.value = combinedList
+            Log.i("MedicationTrackerViewModel", "Successfully refreshed medication state.")
         }
     }
 
@@ -38,7 +59,7 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch {
             Log.i("MedicationTrackerViewModel", "Taking medication: $name.")
             dailyMedicationLogManager.takeMedication(name)
-            refreshTakenToday() // Refresh the public state after modification
+            refreshMedications() // Refresh the state after taking a med
             Log.i("MedicationTrackerViewModel", "Successfully took medication: $name.")
         }
     }
@@ -49,6 +70,7 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
             try {
                 val medicationRecord = MedicationRecord(medicationName = name, dosage = dosage)
                 localMedicationStorage.addMedication(medicationRecord)
+                refreshMedications() // Refresh the list after adding a new medication
                 Log.i("MedicationTrackerViewModel", "Successfully added new medication.")
             } catch (e: Exception) {
                 Log.e("MedicationTrackerViewModel", "Failed to add medication.", e)
