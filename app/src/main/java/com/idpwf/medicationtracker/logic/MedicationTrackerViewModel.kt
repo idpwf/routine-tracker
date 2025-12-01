@@ -19,13 +19,10 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
     private val localMedicationStorage = LocalMedicationStorage(application)
     private val dailyMedicationLogManager = DailyMedicationLogManager(application)
 
-    // This is the single source of truth for the UI. It holds the combined
-    // and processed list of medications to be displayed.
     private val _medications = MutableStateFlow<List<Medication>>(emptyList())
     val medications: StateFlow<List<Medication>> = _medications.asStateFlow()
 
     init {
-        // Load the initial state when the ViewModel is created.
         refreshMedications()
     }
 
@@ -33,17 +30,16 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch {
             Log.i("MedicationTrackerViewModel", "Starting to refresh medication state.")
 
-            // Using async to fetch both data sources concurrently for better performance.
             val allMedsDeferred = async { Json.decodeFromString<List<MedicationRecord>>(localMedicationStorage.getAllMedications()) }
             val takenTodayDeferred = async { dailyMedicationLogManager.getCurrentState() }
 
             val allMeds = allMedsDeferred.await()
             val takenTodayRecord = takenTodayDeferred.await()
 
-            // This is the combination logic, as specified in the MT-004 prompt.
             val combinedList = allMeds.map { medicationRecord ->
                 val takenCount = takenTodayRecord.medicationsTaken[medicationRecord.medicationName] ?: 0
                 Medication(
+                    id = medicationRecord.id,
                     name = medicationRecord.medicationName,
                     dosage = medicationRecord.dosage,
                     takenToday = takenCount
@@ -59,7 +55,7 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch {
             Log.i("MedicationTrackerViewModel", "Taking medication: $name.")
             dailyMedicationLogManager.takeMedication(name)
-            refreshMedications() // Refresh the state after taking a med
+            refreshMedications()
             Log.i("MedicationTrackerViewModel", "Successfully took medication: $name.")
         }
     }
@@ -70,10 +66,32 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
             try {
                 val medicationRecord = MedicationRecord(medicationName = name, dosage = dosage)
                 localMedicationStorage.addMedication(medicationRecord)
-                refreshMedications() // Refresh the list after adding a new medication
+                refreshMedications()
                 Log.i("MedicationTrackerViewModel", "Successfully added new medication.")
             } catch (e: Exception) {
                 Log.e("MedicationTrackerViewModel", "Failed to add medication.", e)
+            }
+        }
+    }
+
+    fun deleteMedication(medication: Medication) {
+        viewModelScope.launch {
+            Log.i("MedicationTrackerViewModel", "Deleting medication: ${medication.name}.")
+            try {
+                // We reconstruct the database entity from our UI model.
+                val medicationRecord = MedicationRecord(
+                    id = medication.id,
+                    medicationName = medication.name,
+                    dosage = medication.dosage
+                )
+                if (localMedicationStorage.deleteMedication(medicationRecord)) {
+                    Log.i("MedicationTrackerViewModel", "Successfully deleted medication.")
+                } else {
+                    Log.w("MedicationTrackerViewModel", "Attempted to delete a medication that does not exist.")
+                }
+                refreshMedications() // Refresh the list after deletion.
+            } catch (e: Exception) {
+                Log.e("MedicationTrackerViewModel", "Failed to delete medication.", e)
             }
         }
     }

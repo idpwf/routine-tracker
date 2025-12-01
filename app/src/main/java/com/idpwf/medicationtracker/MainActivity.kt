@@ -29,8 +29,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.idpwf.medicationtracker.logic.MedicationTrackerViewModel
 import com.idpwf.medicationtracker.ui.theme.MedicationTrackerTheme
 
-// This data class represents the fully combined data needed for display in the UI.
-class Medication(val name: String, val dosage: String, val takenToday: Int)
+// The UI model now includes the database ID. This is crucial for reliably
+// identifying which medication to delete.
+class Medication(val id: Int, val name: String, val dosage: String, val takenToday: Int)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,8 +40,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             MedicationTrackerTheme {
                 val viewModel: MedicationTrackerViewModel = viewModel()
-                // The UI observes the list of medications. When this list changes in the
-                // ViewModel, this composable will automatically re-render.
                 val medications by viewModel.medications.collectAsState()
 
                 var showAddMedicationDialog by remember { mutableStateOf(false) }
@@ -58,7 +57,8 @@ class MainActivity : ComponentActivity() {
                         MedicationTrackerTopBar()
                         MedicationTrackerMedsList(
                             meds = medications,
-                            onMedicationTaken = { medicationName -> viewModel.takeMed(medicationName) }
+                            onMedicationTaken = { medicationName -> viewModel.takeMed(medicationName) },
+                            onDeleteMedication = { medication -> viewModel.deleteMedication(medication) }
                         )
                     }
                 }
@@ -134,7 +134,8 @@ fun TakenMedTodayCounter(modifier: Modifier = Modifier, count: Int) {
 fun TakenMedRow(
     modifier: Modifier = Modifier, 
     medication: Medication, 
-    onMedicationTaken: (String) -> Unit
+    onMedicationTaken: (String) -> Unit,
+    onDeleteMedication: (Medication) -> Unit
 ) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Button(
@@ -150,7 +151,7 @@ fun TakenMedRow(
         )
 
         Button(
-            { },
+            onClick = { onDeleteMedication(medication) },
             modifier = Modifier.weight(1f)
         ) {
             Text("❌")
@@ -192,7 +193,8 @@ fun TakenMedLabelRow(modifier: Modifier = Modifier) {
 fun MedicationTrackerMedsList(
     meds: List<Medication>,
     modifier: Modifier = Modifier,
-    onMedicationTaken: (String) -> Unit
+    onMedicationTaken: (String) -> Unit,
+    onDeleteMedication: (Medication) -> Unit
 ) {
     Column(modifier) {
         TakenMedLabelRow(modifier = Modifier.fillMaxWidth())
@@ -200,7 +202,8 @@ fun MedicationTrackerMedsList(
             TakenMedRow(
                 modifier = Modifier.fillMaxWidth(),
                 medication = medication,
-                onMedicationTaken = onMedicationTaken
+                onMedicationTaken = onMedicationTaken,
+                onDeleteMedication = onDeleteMedication
             )
         }
     }
