@@ -2,10 +2,11 @@ package com.idpwf.medicationtracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// A modern, clean color palette designed for a dark theme.
+// These colors are chosen for their accessibility and professional look.
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val SlateGray = Color(0xFF2d3748)
+val SteelBlue = Color(0xFF4a5568)
+val SkyBlue = Color(0xFF87CEEB)  // A pleasant accent color
+val OffWhite = Color(0xFFf7fafc)
+val MutedGray = Color(0xFFa0aec0)

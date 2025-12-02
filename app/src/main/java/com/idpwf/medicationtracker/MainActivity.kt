@@ -3,16 +3,31 @@ package com.idpwf.medicationtracker
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,15 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.idpwf.medicationtracker.logic.MedicationTrackerViewModel
 import com.idpwf.medicationtracker.ui.theme.MedicationTrackerTheme
 
-// The UI model now includes the database ID. This is crucial for reliably
-// identifying which medication to delete.
 class Medication(val id: Int, val name: String, val dosage: String, val takenToday: Int)
 
 class MainActivity : ComponentActivity() {
@@ -47,7 +60,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     floatingActionButton = {
                         FloatingActionButton(onClick = { showAddMedicationDialog = true }) {
-                            Text(text = "➕", fontSize = 24.sp)
+                            Icon(Icons.Filled.Add, contentDescription = "Add Medication")
                         }
                     }
                 ) { innerPadding ->
@@ -121,71 +134,86 @@ fun MedicationTrackerTopBar(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TakenMedTodayCounter(modifier: Modifier = Modifier, count: Int) {
-    Text(
-        text = count.toString(),
-        modifier = modifier,
-        fontSize = 30.sp,
-        textAlign = TextAlign.Center
-    )
+fun AppHeaderRow(modifier: Modifier = Modifier) {
+    Row(modifier.padding(16.dp)) {
+        Text(
+            text = "Medication Tracker",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 @Composable
 fun TakenMedRow(
-    modifier: Modifier = Modifier, 
-    medication: Medication, 
+    modifier: Modifier = Modifier,
+    medication: Medication,
     onMedicationTaken: (String) -> Unit,
     onDeleteMedication: (Medication) -> Unit
 ) {
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Button(
-            onClick = { onMedicationTaken(medication.name) },
-            modifier = Modifier.weight(4f)
-        ) {
-            Text(text = "${medication.name} ${medication.dosage}")
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Top Row: Medication Info and Count
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Column for Name and Dosage to stack them vertically.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = medication.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = medication.dosage,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = medication.takenToday.toString(),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(8.dp))
+
+            // Bottom Row: Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = { onMedicationTaken(medication.name) },
+                    shape = MaterialTheme.shapes.medium) {
+                    Text("Take Now",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                IconButton(onClick = { onDeleteMedication(medication) },
+                    colors = IconButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        disabledContentColor = MaterialTheme.colorScheme.outline,
+                        disabledContainerColor = Color.Transparent
+                    )) {
+                    Icon(Icons.Filled.Delete,
+                        contentDescription = "Delete Medication"
+                    )
+                }
+            }
         }
-
-        TakenMedTodayCounter(
-            modifier = Modifier.weight(1f),
-            count = medication.takenToday
-        )
-
-        Button(
-            onClick = { onDeleteMedication(medication) },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("❌")
-        }
-    }
-}
-
-@Composable
-fun AppHeaderRow(modifier: Modifier = Modifier) {
-    Row(modifier) {
-        Spacer(Modifier.weight(1f))
-        Text(text = "Medication Tracker", textAlign = TextAlign.Center)
-        Spacer(Modifier.weight(1f))
-    }
-}
-
-@Composable
-fun TakenMedLabelRow(modifier: Modifier = Modifier) {
-    Row(modifier.fillMaxWidth()) {
-        Text(
-            text = "Medication Name and Dose",
-            modifier = Modifier.weight(4f),
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = "Today",
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = "Delete",
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center
-        )
     }
 }
 
@@ -197,10 +225,8 @@ fun MedicationTrackerMedsList(
     onDeleteMedication: (Medication) -> Unit
 ) {
     Column(modifier) {
-        TakenMedLabelRow(modifier = Modifier.fillMaxWidth())
         meds.forEach { medication ->
             TakenMedRow(
-                modifier = Modifier.fillMaxWidth(),
                 medication = medication,
                 onMedicationTaken = onMedicationTaken,
                 onDeleteMedication = onDeleteMedication
