@@ -3,8 +3,7 @@ package com.idpwf.medicationtracker
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,9 +21,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -38,7 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.idpwf.medicationtracker.logic.MedicationTrackerViewModel
@@ -71,7 +71,11 @@ class MainActivity : ComponentActivity() {
                         MedicationTrackerMedsList(
                             meds = medications,
                             onMedicationTaken = { medicationName -> viewModel.takeMed(medicationName) },
-                            onDeleteMedication = { medication -> viewModel.deleteMedication(medication) }
+                            onDeleteMedication = { medication ->
+                                viewModel.deleteMedication(
+                                    medication
+                                )
+                            }
                         )
                     }
                 }
@@ -79,8 +83,8 @@ class MainActivity : ComponentActivity() {
                 if (showAddMedicationDialog) {
                     AddMedicationDialog(
                         onDismiss = { showAddMedicationDialog = false },
-                        onConfirm = {
-                            name, dosage -> viewModel.addMedication(name, dosage)
+                        onConfirm = { name, dosage ->
+                            viewModel.addMedication(name, dosage)
                             showAddMedicationDialog = false
                         }
                     )
@@ -157,30 +161,36 @@ fun TakenMedRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Top Row: Medication Info and Count
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Column for Name and Dosage to stack them vertically.
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = medication.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = medication.dosage,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                Text(
+                    text = "${medication.name} ",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = medication.dosage,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    text = "Taken today: ",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 Text(
                     text = medication.takenToday.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.secondary
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -188,27 +198,39 @@ fun TakenMedRow(
             HorizontalDivider()
             Spacer(Modifier.height(8.dp))
 
-            // Bottom Row: Actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = { onMedicationTaken(medication.name) },
-                    shape = MaterialTheme.shapes.medium) {
-                    Text("Take Now",
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium
+                TextButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp)
+                        .background(
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                    onClick = { onMedicationTaken(medication.name) },
+                    shape = MaterialTheme.shapes.medium,
+                ) {
+                    Text(
+                        "Take Now",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = TextUnit(0.5f, TextUnitType.Sp)
                     )
                 }
-                IconButton(onClick = { onDeleteMedication(medication) },
-                    colors = IconButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.primary,
-                        disabledContentColor = MaterialTheme.colorScheme.outline,
-                        disabledContainerColor = Color.Transparent
-                    )) {
-                    Icon(Icons.Filled.Delete,
+                IconButton(
+                    modifier = Modifier.background(
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                    onClick = { onDeleteMedication(medication) },
+                ) {
+                    Icon(
+                        Icons.Filled.Delete,
                         contentDescription = "Delete Medication"
                     )
                 }
