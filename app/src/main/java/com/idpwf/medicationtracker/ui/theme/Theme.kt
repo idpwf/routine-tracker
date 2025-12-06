@@ -4,8 +4,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
-// Define the color scheme for the application.
-// We are using a dark color scheme by default.
 private val AppColorScheme = darkColorScheme(
     background = Background,
     onBackground = OnBackground,

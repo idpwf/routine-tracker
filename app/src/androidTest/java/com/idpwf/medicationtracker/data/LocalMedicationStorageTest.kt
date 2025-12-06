@@ -45,22 +45,6 @@ class LocalMedicationStorageTest {
         assertThat(result).isEqualTo("[]")
     }
 
-//    @Test
-//    fun getAllMedications_whenDbHasRecords_returnsCorrectJson() = runBlocking {
-//        // Arrange
-//        val record1 = MedicationRecord(1, "Aspirin", "100 mg")
-//        val record2 = MedicationRecord(2, "Ibuprofen", "200 mg")
-//        medicationDao.insert(record1)
-//        medicationDao.insert(record2)
-//
-//        // Act
-//        val result = storage.getAllMedications()
-//        val decodedResult = Json.decodeFromString<List<MedicationRecord>>(result)
-//
-//        // Assert
-//        assertThat(decodedResult).containsExactly(record1, record2)
-//    }
-
     @Test
     fun addMedication_addsRecordSuccessfully() = runBlocking {
         // Arrange

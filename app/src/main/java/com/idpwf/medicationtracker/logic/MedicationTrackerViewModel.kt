@@ -28,16 +28,17 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
 
     private fun refreshMedications() {
         viewModelScope.launch {
-            Log.i("MedicationTrackerViewModel", "Starting to refresh medication state.")
 
-            val allMedsDeferred = async { Json.decodeFromString<List<MedicationRecord>>(localMedicationStorage.getAllMedications()) }
+            val allMedsDeferred =
+                async { Json.decodeFromString<List<MedicationRecord>>(localMedicationStorage.getAllMedications()) }
             val takenTodayDeferred = async { dailyMedicationLogManager.getCurrentState() }
 
             val allMeds = allMedsDeferred.await()
             val takenTodayRecord = takenTodayDeferred.await()
 
             val combinedList = allMeds.map { medicationRecord ->
-                val takenCount = takenTodayRecord.medicationsTaken[medicationRecord.medicationName] ?: 0
+                val takenCount =
+                    takenTodayRecord.medicationsTaken[medicationRecord.medicationName] ?: 0
                 Medication(
                     id = medicationRecord.id,
                     name = medicationRecord.medicationName,
@@ -47,52 +48,33 @@ class MedicationTrackerViewModel(application: Application) : AndroidViewModel(ap
             }
 
             _medications.value = combinedList
-            Log.i("MedicationTrackerViewModel", "Successfully refreshed medication state.")
         }
     }
 
     fun takeMed(name: String) {
         viewModelScope.launch {
-            Log.i("MedicationTrackerViewModel", "Taking medication: $name.")
             dailyMedicationLogManager.takeMedication(name)
             refreshMedications()
-            Log.i("MedicationTrackerViewModel", "Successfully took medication: $name.")
         }
     }
 
     fun addMedication(name: String, dosage: String) {
         viewModelScope.launch {
-            Log.i("MedicationTrackerViewModel", "Adding new medication: $name, $dosage.")
-            try {
-                val medicationRecord = MedicationRecord(medicationName = name, dosage = dosage)
-                localMedicationStorage.addMedication(medicationRecord)
-                refreshMedications()
-                Log.i("MedicationTrackerViewModel", "Successfully added new medication.")
-            } catch (e: Exception) {
-                Log.e("MedicationTrackerViewModel", "Failed to add medication.", e)
-            }
+            val medicationRecord = MedicationRecord(medicationName = name, dosage = dosage)
+            localMedicationStorage.addMedication(medicationRecord)
+            refreshMedications()
         }
     }
 
     fun deleteMedication(medication: Medication) {
         viewModelScope.launch {
-            Log.i("MedicationTrackerViewModel", "Deleting medication: ${medication.name}.")
-            try {
-                // We reconstruct the database entity from our UI model.
-                val medicationRecord = MedicationRecord(
-                    id = medication.id,
-                    medicationName = medication.name,
-                    dosage = medication.dosage
-                )
-                if (localMedicationStorage.deleteMedication(medicationRecord)) {
-                    Log.i("MedicationTrackerViewModel", "Successfully deleted medication.")
-                } else {
-                    Log.w("MedicationTrackerViewModel", "Attempted to delete a medication that does not exist.")
-                }
-                refreshMedications() // Refresh the list after deletion.
-            } catch (e: Exception) {
-                Log.e("MedicationTrackerViewModel", "Failed to delete medication.", e)
-            }
+            val medicationRecord = MedicationRecord(
+                id = medication.id,
+                medicationName = medication.name,
+                dosage = medication.dosage
+            )
+            localMedicationStorage.deleteMedication(medicationRecord)
+            refreshMedications()
         }
     }
 }

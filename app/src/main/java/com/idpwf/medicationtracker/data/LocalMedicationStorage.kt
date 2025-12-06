@@ -11,8 +11,6 @@ class LocalMedicationStorage {
         this.medicationDao = MedicationDatabase.getDatabase(context).medicationDao()
     }
 
-    // This internal constructor is used for testing purposes,
-    // allowing a mock or in-memory DAO to be injected.
     internal constructor(medicationDao: MedicationDao) {
         this.medicationDao = medicationDao
     }
