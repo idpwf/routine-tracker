@@ -1,7 +1,6 @@
 package com.idpwf.medicationtracker.logic
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.idpwf.medicationtracker.Medication
