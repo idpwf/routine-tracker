@@ -7,14 +7,11 @@ import androidx.compose.runtime.Composable
 // Define the color scheme for the application.
 // We are using a dark color scheme by default.
 private val AppColorScheme = darkColorScheme(
-    primary = SkyBlue,       // A pleasant accent for primary actions
-    background = SlateGray,    // The main background color
-    surface = SteelBlue,       // Color for surfaces like Cards and Buttons
-    onPrimary = SlateGray,
-    onBackground = OffWhite,
-    onSurface = OffWhite,
-    secondary = MutedGray,
-    onSecondary = OffWhite
+    background = Background,
+    onBackground = OnBackground,
+
+    secondaryContainer = Secondary,
+    onSecondaryContainer = OnSecondary,
 )
 
 @Composable

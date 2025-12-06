@@ -16,11 +16,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -59,8 +61,18 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { showAddMedicationDialog = true }) {
-                            Icon(Icons.Filled.Add, contentDescription = "Add Medication")
+                        FloatingActionButton(
+                            onClick = { showAddMedicationDialog = true },
+                            containerColor = MaterialTheme.colorScheme.background
+                        ) {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "Add Medication",
+                                modifier = Modifier.background(
+                                    shape = MaterialTheme.shapes.medium,
+                                    color = MaterialTheme.colorScheme.background
+                                ),
+                            )
                         }
                     }
                 ) { innerPadding ->
@@ -70,11 +82,11 @@ class MainActivity : ComponentActivity() {
                         MedicationTrackerTopBar()
                         MedicationTrackerMedsList(
                             meds = medications,
-                            onMedicationTaken = { medicationName -> viewModel.takeMed(medicationName) },
+                            onMedicationTaken = { medicationName ->
+                                viewModel.takeMed(medicationName)
+                            },
                             onDeleteMedication = { medication ->
-                                viewModel.deleteMedication(
-                                    medication
-                                )
+                                viewModel.deleteMedication(medication)
                             }
                         )
                     }
@@ -132,16 +144,13 @@ fun AddMedicationDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> Un
 
 @Composable
 fun MedicationTrackerTopBar(modifier: Modifier = Modifier) {
-    Column(modifier) {
-        AppHeaderRow(modifier = Modifier.fillMaxWidth())
-    }
-}
-
-@Composable
-fun AppHeaderRow(modifier: Modifier = Modifier) {
-    Row(modifier.padding(16.dp)) {
+    Row(
+        modifier
+            .padding(16.dp)
+            .padding(top = 8.dp)
+    ) {
         Text(
-            text = "Medication Tracker",
+            text = "Private Medication Tracker",
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
@@ -157,9 +166,13 @@ fun TakenMedRow(
     onDeleteMedication: (Medication) -> Unit
 ) {
     Card(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     ) {
         Column(
             modifier = modifier
@@ -174,23 +187,23 @@ fun TakenMedRow(
                 Text(
                     text = "${medication.name} ",
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 Text(
                     text = medication.dosage,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = "Taken today: ",
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 Text(
                     text = medication.takenToday.toString(),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
 
@@ -204,30 +217,41 @@ fun TakenMedRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(
+                    onClick = { onMedicationTaken(medication.name) },
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 16.dp)
                         .background(
                             shape = MaterialTheme.shapes.medium,
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                            color = MaterialTheme.colorScheme.background
                         ),
-                    onClick = { onMedicationTaken(medication.name) },
                     shape = MaterialTheme.shapes.medium,
+                    colors = ButtonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        disabledContainerColor = MaterialTheme.colorScheme.errorContainer,
+                        disabledContentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
                     Text(
                         "Take Now",
-                        color = Color.White,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Medium,
                         letterSpacing = TextUnit(0.5f, TextUnitType.Sp)
                     )
                 }
                 IconButton(
+                    onClick = { onDeleteMedication(medication) },
                     modifier = Modifier.background(
                         shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.secondaryContainer
+                        color = MaterialTheme.colorScheme.background
                     ),
-                    onClick = { onDeleteMedication(medication) },
+                    colors = IconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        disabledContainerColor = MaterialTheme.colorScheme.errorContainer,
+                        disabledContentColor = MaterialTheme.colorScheme.error
+                    ),
                 ) {
                     Icon(
                         Icons.Filled.Delete,
