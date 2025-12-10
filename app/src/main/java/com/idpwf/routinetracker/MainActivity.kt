@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -63,15 +64,17 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = {
                         FloatingActionButton(
                             onClick = { showAddMedicationDialog = true },
-                            containerColor = MaterialTheme.colorScheme.background
+                            containerColor = MaterialTheme.colorScheme.background,
+                            modifier = Modifier.padding(bottom = 24.dp, end = 24.dp)
+                                .size(80.dp)
                         ) {
                             Icon(
                                 Icons.Filled.Add,
                                 contentDescription = "Add Routine",
                                 modifier = Modifier.background(
                                     shape = MaterialTheme.shapes.medium,
-                                    color = MaterialTheme.colorScheme.background
-                                ),
+                                    color = MaterialTheme.colorScheme.background,
+                                ).size(44.dp),
                             )
                         }
                     }
@@ -113,30 +116,75 @@ fun AddMedicationDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> Un
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add New Routine") },
+        title = {
+            Text(
+                "Add New Routine",
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
         text = {
             Column {
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Routine Name") }
+                    label = { Text("Routine Name") },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        focusedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 TextField(
                     value = dosage,
                     onValueChange = { dosage = it },
-                    label = { Text("Note") }
+                    label = { Text("Note") },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        focusedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(name, dosage) }) {
-                Text("Add")
+            TextButton(
+                onClick = { onConfirm(name, dosage) },
+                modifier = Modifier.background(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.background
+                ),
+                colors = ButtonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                    disabledContainerColor = MaterialTheme.colorScheme.errorContainer,
+                    disabledContentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Add", style = MaterialTheme.typography.titleMedium)
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.background(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.background
+                ),
+                colors = ButtonColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                    disabledContainerColor = MaterialTheme.colorScheme.errorContainer,
+                    disabledContentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Cancel", style = MaterialTheme.typography.titleMedium)
             }
         }
     )
@@ -196,7 +244,7 @@ fun TakenMedRow(
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = "Taken today: ",
+                    text = "Done today: ",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
@@ -234,7 +282,7 @@ fun TakenMedRow(
                     )
                 ) {
                     Text(
-                        "Take Now",
+                        "Doing It",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Medium,
                         letterSpacing = TextUnit(0.5f, TextUnitType.Sp)
